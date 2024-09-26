@@ -1,0 +1,5 @@
+config.codekit3
+.phpunit.result.cache
+.DS_Store
+/vendor/
+composer.lock
