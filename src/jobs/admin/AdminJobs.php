@@ -12,7 +12,7 @@ class AdminJobs
     ) {
         add_meta_box('job_meta', __('Job informations', 'jobs_posting'), [$this, 'jobMeta'], $postType, 'normal', 'low');
         add_meta_box('company_meta', __('Company informations', 'jobs_posting'), [$this, 'companyMeta'], $postType, 'normal', 'low');
-        add_meta_box('advantages_meta', __('Job benifits', 'jobs_posting'), [$this, 'advantagesMeta'], $postType, 'normal', 'low');
+        add_meta_box('advantages_meta', __('Job benifits', 'jobs_posting'), [$this, 'perksMeta'], $postType, 'normal', 'low');
         add_meta_box('where_meta', __('Job location', 'jobs_posting'), [$this, 'whereMeta'], $postType, 'normal', 'low');
         add_meta_box('salary_meta', __('Salary', 'jobs_posting'), [$this, 'salaryMeta'], $postType, 'normal', 'low');
 
@@ -26,7 +26,7 @@ class AdminJobs
 
         $this->customPost = $post ? get_post_custom($post->ID) : [];
 
-        $jobEndTime     = !empty($this->customPost['jobEndTime']) ? $this->customPost['jobEndTime'][0] : '';
+        $jobDisplayEnd     = !empty($this->customPost['jobDisplayEnd']) ? $this->customPost['jobDisplayEnd'][0] : '';
         $jobStartTime   = !empty($this->customPost['jobStartTime']) ? $this->customPost['jobStartTime'][0] : '';
         $jobType        = !empty($this->customPost['jobType']) ? $this->customPost['jobType'][0] : '';
         $jobDescription = !empty($this->customPost['jobDescription']) ? $this->customPost['jobDescription'][0] : '';
@@ -34,8 +34,8 @@ class AdminJobs
         $jobTotalHour   = !empty($this->customPost['jobTotalHour']) ? $this->customPost['jobTotalHour'][0] : '';
         ?>
         <div>
-            <label for="jobEndTime"><?= __('Show until:', 'jobs_posting')?></label>
-            <input name="jobEndTime" id="jobEndTime" value="<?= $jobEndTime ? date('Y-m-d', (int)$jobEndTime) : ''; ?>" type="date" />
+            <label for="jobDisplayEnd"><?= __('Show until:', 'jobs_posting')?></label>
+            <input name="jobDisplayEnd" id="jobDisplayEnd" value="<?= $jobDisplayEnd ? date('Y-m-d', (int)$jobDisplayEnd) : ''; ?>" type="date" />
         </div>
 
         <div>
@@ -138,13 +138,13 @@ class AdminJobs
         <?php
     }
 
-    public function advantagesMeta(): void
+    public function perksMeta(): void
     {
-        $advantagesDescription = !empty($this->customPost['advantagesDescription']) ? $this->customPost['advantagesDescription'][0] : '';
+        $perksDescription = !empty($this->customPost['perksDescription']) ? $this->customPost['perksDescription'][0] : '';
         ?>
         <div>
-            <label for="advantagesDescription"><?= __('Job advantages:', 'jobs_posting')?></label>
-            <?php wp_editor($advantagesDescription, 'advantagesDescription', ['wpautop'=>true, 'teeny'=>true]); ?>
+            <label for="perksDescription"><?= __('Job perks:', 'jobs_posting')?></label>
+            <?php wp_editor($perksDescription, 'perksDescription', ['wpautop'=>true, 'teeny'=>true]); ?>
         </div>
         <?php
     }
@@ -255,18 +255,18 @@ class AdminJobs
 
     public function salaryMeta(): void
     {
-        $salaryJobType  = !empty($this->customPost['salaryJobType']) ? $this->customPost['salaryJobType'][0] : '';
+        $salaryJobCategory  = !empty($this->customPost['salaryJobCategory']) ? $this->customPost['salaryJobCategory'][0] : '';
         $salaryCurrency = !empty($this->customPost['salaryCurrency']) ? $this->customPost['salaryCurrency'][0] : '';
         $salaryMin      = !empty($this->customPost['salaryMin']) ? $this->customPost['salaryMin'][0] : '';
         $salaryMax      = !empty($this->customPost['salaryMax']) ? $this->customPost['salaryMax'][0] : '';
-        $salaryType     = !empty($this->customPost['salaryType']) ? $this->customPost['salaryType'][0] : '';
+        $salaryRecurrency     = !empty($this->customPost['salaryRecurrency']) ? $this->customPost['salaryRecurrency'][0] : '';
         ?>
         <div>
-            <label for="salaryJobType"><?= __('Salary category:', 'jobs_posting')?></label>
-            <select name="salaryJobType" id="salaryJobType">
-                <option <?= $salaryJobType === 'normal' ? ' selected="selected"' : '';?> value="normal"><?= __('Normal', 'jobs_posting')?></option>
-                <option <?= $salaryJobType === 'discuter' ? ' selected="selected"' : '';?> value="discuter"><?= __('To discuss', 'jobs_posting')?></option>
-                <option <?= $salaryJobType === 'commission' ? ' selected="selected"' : '';?> value="commission"><?= __('Commisson', 'jobs_posting')?></option>
+            <label for="salaryJobCategory"><?= __('Salary category:', 'jobs_posting')?></label>
+            <select name="salaryJobCategory" id="salaryJobCategory">
+                <option <?= $salaryJobCategory === 'normal' ? ' selected="selected"' : '';?> value="normal"><?= __('Normal', 'jobs_posting')?></option>
+                <option <?= $salaryJobCategory === 'discuss' ? ' selected="selected"' : '';?> value="discuss"><?= __('To discuss', 'jobs_posting')?></option>
+                <option <?= $salaryJobCategory === 'commission' ? ' selected="selected"' : '';?> value="commission"><?= __('Commisson', 'jobs_posting')?></option>
             </select>
         </div>
         
@@ -289,13 +289,13 @@ class AdminJobs
         </div>
 
         <div>
-            <label for="salaryType"><?= __('Salary type:', 'jobs_posting')?></label>
-            <select name="salaryType" id="salaryType">
-                <option value="HOUR"<?= $salaryType === 'HOUR' ?' selected="selected"' : '';?>><?= __('Hourly', 'jobs_posting')?></option>
-                <option value="DAY"<?= $salaryType === 'DAY' ?' selected="selected"' : '';?>><?= __('Dayly', 'jobs_posting')?></option>
-                <option value="WEEK"<?= $salaryType === 'WEEK' ?' selected="selected"' : '';?>><?= __('Weekly', 'jobs_posting')?></option>
-                <option value="MONTH"<?= $salaryType === 'MONTH' ?' selected="selected"' : '';?>><?= __('Monthly', 'jobs_posting')?></option>
-                <option value="YEAR"<?= $salaryType === 'YEAR' ?' selected="selected"' : '';?>><?= __('Yearly', 'jobs_posting')?></option>
+            <label for="salaryRecurrency"><?= __('Salary type:', 'jobs_posting')?></label>
+            <select name="salaryRecurrency" id="salaryRecurrency">
+                <option value="HOUR"<?= $salaryRecurrency === 'HOUR' ? ' selected="selected"' : '';?>><?= __('Hourly', 'jobs_posting')?></option>
+                <option value="DAY"<?= $salaryRecurrency === 'DAY' ? ' selected="selected"' : '';?>><?= __('Dayly', 'jobs_posting')?></option>
+                <option value="WEEK"<?= $salaryRecurrency === 'WEEK' ? ' selected="selected"' : '';?>><?= __('Weekly', 'jobs_posting')?></option>
+                <option value="MONTH"<?= $salaryRecurrency === 'MONTH' ? ' selected="selected"' : '';?>><?= __('Monthly', 'jobs_posting')?></option>
+                <option value="YEAR"<?= $salaryRecurrency === 'YEAR' ? ' selected="selected"' : '';?>><?= __('Yearly', 'jobs_posting')?></option>
             </select>
         </div>
         <?php
@@ -425,9 +425,9 @@ class AdminJobs
             global $post;
 
             $postId          = $post->ID;
-            $jobEndTimeEpoch = new \DateTime($_POST['jobEndTime'].' 23:59:59');
+            $jobDisplayEndEpoch = new \DateTime($_POST['jobDisplayEnd'].' 23:59:59');
             
-            update_post_meta($postId,'jobEndTime', $jobEndTimeEpoch->format('U'));
+            update_post_meta($postId,'jobDisplayEnd', $jobDisplayEndEpoch->format('U'));
             update_post_meta($postId,'jobStartTime', $_POST['jobStartTime']);
             update_post_meta($postId,'jobType', $_POST['jobType']);
             update_post_meta($postId,'jobDescription', $_POST['jobDescription']);
@@ -442,17 +442,17 @@ class AdminJobs
             update_post_meta($postId,'companyFax', $_POST['companyFax']);
             update_post_meta($postId,'companyURLApply', $_POST['companyURLApply']);
             update_post_meta($postId,'companyDescription', $_POST['companyDescription']);
-            update_post_meta($postId,'advantagesDescription', $_POST['advantagesDescription']);
+            update_post_meta($postId,'perksDescription', $_POST['perksDescription']);
             update_post_meta($postId,'whereStreet', $_POST['whereStreet']);
             update_post_meta($postId,'whereCity', $_POST['whereCity']);
             update_post_meta($postId,'whereProvince', $_POST['whereProvince']);
             update_post_meta($postId,'wherePostalCode', $_POST['wherePostalCode']);
             update_post_meta($postId,'whereCountry', $_POST['whereCountry']);
-            update_post_meta($postId,'salaryJobType', $_POST['salaryJobType']);
+            update_post_meta($postId,'salaryJobCategory', $_POST['salaryJobCategory']);
             update_post_meta($postId,'salaryCurrency', $_POST['salaryCurrency']);
             update_post_meta($postId,'salaryMin', $_POST['salaryMin']);
             update_post_meta($postId,'salaryMax', $_POST['salaryMax']);
-            update_post_meta($postId,'salaryType', $_POST['salaryType']);
+            update_post_meta($postId,'salaryRecurrency', $_POST['salaryRecurrency']);
             
             $updateCompanySameAddress = '';
             if (isset($_POST['companySameAddress'])) {
