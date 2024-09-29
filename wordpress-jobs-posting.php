@@ -21,6 +21,8 @@ require_once plugin_dir_path(__FILE__) . 'src/jobs/menu/MenuJobs.php';
 require_once plugin_dir_path(__FILE__) . 'src/jobs/admin/AdminJobs.php';
 require_once plugin_dir_path(__FILE__) . 'src/jobs/template/TemplateJobs.php';
 require_once plugin_dir_path(__FILE__) . 'src/jobs/component/ContentJob.php';
+require_once plugin_dir_path(__FILE__) . 'src/jobs/component/enum/SalaryRecurrency.php';
+require_once plugin_dir_path(__FILE__) . 'src/jobs/component/enum/JobType.php';
 
 function run_my_plugin(): void
 {

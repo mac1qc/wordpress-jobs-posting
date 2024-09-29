@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Mac1qc\WordpressJobsPosting\jobs\admin;
 
+use Mac1qc\WordpressJobsPosting\jobs\component\ContentJob;
+use Mac1qc\WordpressJobsPosting\jobs\component\enum\SalaryRecurrency;
+
 class AdminJobs
 {
     public function __construct(
         private string $postType,
-        private array $customPost = [],
+        private int    $postId = 0,
     ) {
         add_meta_box('job_meta', __('Job informations', 'jobs_posting'), [$this, 'jobMeta'], $postType, 'normal', 'low');
         add_meta_box('company_meta', __('Company informations', 'jobs_posting'), [$this, 'companyMeta'], $postType, 'normal', 'low');
@@ -24,14 +27,12 @@ class AdminJobs
     {
         global $post;
 
-        $this->customPost = $post ? get_post_custom($post->ID) : [];
+        $this->postId = $post ? $post->ID : 0;
 
-        $jobDisplayEnd     = !empty($this->customPost['jobDisplayEnd']) ? $this->customPost['jobDisplayEnd'][0] : '';
-        $jobStartTime   = !empty($this->customPost['jobStartTime']) ? $this->customPost['jobStartTime'][0] : '';
-        $jobType        = !empty($this->customPost['jobType']) ? $this->customPost['jobType'][0] : '';
-        $jobDescription = !empty($this->customPost['jobDescription']) ? $this->customPost['jobDescription'][0] : '';
-        $jobSkills      = !empty($this->customPost['jobSkills']) ? $this->customPost['jobSkills'][0] : '';
-        $jobTotalHour   = !empty($this->customPost['jobTotalHour']) ? $this->customPost['jobTotalHour'][0] : '';
+        $contentJob = new ContentJob($this->postId);
+
+        $jobDisplayEnd = $contentJob->getDisplayEnd();
+        $jobType       = $contentJob->getType();
         ?>
         <div>
             <label for="jobDisplayEnd"><?= __('Show until:', 'jobs_posting')?></label>
@@ -40,122 +41,112 @@ class AdminJobs
 
         <div>
             <label for="jobStartTime"><?= __('Start working on:', 'jobs_posting')?></label>
-            <input name="jobStartTime" id="jobStartTime" value="<?= $jobStartTime; ?>" type="text" />
+            <input name="jobStartTime" id="jobStartTime" value="<?= $contentJob->getStartDate(); ?>" type="text" />
         </div>
 
         <div>
             <label for="jobType"><?= __('Job type:', 'jobs_posting')?></label>
             <select name="jobType" id="jobType">
-                <option value="FULL_TIME"<?= $jobType === 'FULL_TIME' ? ' selected="selected"' : '';?>><?= __('Full time', 'jobs_posting')?></option>
-                <option value="PART_TIME"<?= $jobType === 'PART_TIME' ? ' selected="selected"' : '';?>><?= __('Part time', 'jobs_posting')?></option>
-                <option value="CONTRACTOR"<?= $jobType === 'CONTRACTOR' ? ' selected="selected"' : '';?>><?= __('Contractor', 'jobs_posting')?></option>
-                <option value="TEMPORARY"<?= $jobType === 'TEMPORARY' ? ' selected="selected"' : '';?>><?= __('Temporary', 'jobs_posting')?></option>
-                <option value="INTERN"<?= $jobType === 'INTERN' ? ' selected="selected"' : '';?>><?= __('Intern', 'jobs_posting')?></option>
-                <option value="VOLUNTEER"<?= $jobType === 'VOLUNTEER' ? ' selected="selected"' : '';?>><?= __('Volunteer', 'jobs_posting')?></option>
-                <option value="PER_DIEM"<?= $jobType === 'PER_DIEM' ? ' selected="selected"' : '';?>><?= __('Per diem', 'jobs_posting')?></option>
-                <option value="OTHER"<?= $jobType === 'OTHER' ? ' selected="selected"' : '';?>><?= __('Other', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::FULL_TIME->value?>"<?= $jobType === SalaryRecurrency::FULL_TIME->value ? ' selected="selected"' : '';?>><?= __('Full time', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::PART_TIME->value?>"<?= $jobType === SalaryRecurrency::PART_TIME->value ? ' selected="selected"' : '';?>><?= __('Part time', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::CONTRACTOR->value?>"<?= $jobType === SalaryRecurrency::CONTRACTOR->value ? ' selected="selected"' : '';?>><?= __('Contractor', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::TEMPORARY->value?>"<?= $jobType === SalaryRecurrency::TEMPORARY->value ? ' selected="selected"' : '';?>><?= __('Temporary', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::INTERN->value?>"<?= $jobType === SalaryRecurrency::INTERN->value ? ' selected="selected"' : '';?>><?= __('Intern', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::VOLUNTEER->value?>"<?= $jobType === SalaryRecurrency::VOLUNTEER->value ? ' selected="selected"' : '';?>><?= __('Volunteer', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::PER_DIEM->value?>"<?= $jobType === SalaryRecurrency::PER_DIEM->value ? ' selected="selected"' : '';?>><?= __('Per diem', 'jobs_posting')?></option>
+                <option value="<?= SalaryRecurrency::OTHER->value?>"<?= $jobType === SalaryRecurrency::OTHER->value ? ' selected="selected"' : '';?>><?= __('Other', 'jobs_posting')?></option>
             </select>
         </div>
 
         <div>
             <label for="jobDescription"><?= __('Job description:', 'jobs_posting')?></label>
-            <?php wp_editor($jobDescription, 'jobDescription', ['wpautop'=>true, 'teeny'=>true]);?>
+            <?php wp_editor($contentJob->getDescription(), 'jobDescription', ['wpautop'=>true, 'teeny'=>true]);?>
         </div>
 
         <div>
             <label for="jobSkills"><?= __('Required skills:', 'jobs_posting')?></label>
-            <?php wp_editor($jobSkills, 'jobSkills', ['wpautop'=>true, 'teeny'=>true]); ?>
+            <?php wp_editor($contentJob->getRequiredSkills(), 'jobSkills', ['wpautop'=>true, 'teeny'=>true]); ?>
         </div>
 
         <div>
             <label for="jobTotalHour"><?= __('Total hours a week:', 'jobs_posting')?></label>
-            <input name="jobTotalHour" id="jobTotalHour" value="<?= $jobTotalHour; ?>" type="number" min="0" />
+            <input name="jobTotalHour" id="jobTotalHour" value="<?= $contentJob->getTotalHour(); ?>" type="number" min="0" />
         </div>
         <?php
     }
     
     public function companyMeta(): void
     {
-        $companyName         = !empty($this->customPost['companyName']) ? $this->customPost['companyName'][0] : '';
-        $companyWebsite      = !empty($this->customPost['companyWebsite']) ? $this->customPost['companyWebsite'][0] : '';
-        $companyAddress      = !empty($this->customPost['companyAddress']) ? $this->customPost['companyAddress'][0] : '';
-        $companyEmail        = !empty($this->customPost['companyEmail']) ? $this->customPost['companyEmail'][0] : '';
-        $companyAddressApply = !empty($this->customPost['companyAddressApply']) ? $this->customPost['companyAddressApply'][0] : '';
-        $companyPhone        = !empty($this->customPost['companyPhone']) ? $this->customPost['companyPhone'][0] : '';
-        $companyFax          = !empty($this->customPost['companyFax']) ? $this->customPost['companyFax'][0] : '';
-        $companySameAddress  = !empty($this->customPost['companySameAddress']) ? $this->customPost['companySameAddress'][0] : '';
-        $companyDescription  = !empty($this->customPost['companyDescription']) ? $this->customPost['companyDescription'][0] : '';
-        $companyURLApply     = !empty($this->customPost['companyURLApply']) ? $this->customPost['companyURLApply'][0] : '';
+        $contentJob = new ContentJob($this->postId);
         ?>
         <div>
             <label for="companyName"><?= __('Company name:', 'jobs_posting')?></label>
-            <input name="companyName" id="companyName" value="<?= $companyName; ?>" type="text" />
+            <input name="companyName" id="companyName" value="<?= $contentJob->getCompanyName(); ?>" type="text" />
         </div>
         
         <div>
             <label for="companyWebsite"><?= __('Site internet :', 'jobs_posting')?></label>
-            <input name="companyWebsite" id="companyWebsite" value="<?= $companyWebsite; ?>" type="text" />
+            <input name="companyWebsite" id="companyWebsite" value="<?= $contentJob->getWebsite(); ?>" type="text" />
         </div>
 
         <div>
-            <label for="companySameAddress"><input type="checkbox" name="companySameAddress" id="companySameAddress" value="true"<?= $companySameAddress !== '' ? ' checked="checked"' : '';?>> <?= __('Company address <strong>IS NOT</strong> the same than where the employee will work', 'jobs_posting')?></label>
+            <label for="companySameAddress"><input type="checkbox" name="companySameAddress" id="companySameAddress" value="true"<?= $contentJob->isSameAddress() ? ' checked="checked"' : '';?>> <?= __('Company address <strong>IS NOT</strong> the same than where the employee will work', 'jobs_posting')?></label>
         </div>
 
         <div id="divCompanyAddress">
             <label for="companyAddress"><?= __('Address:', 'jobs_posting')?></label>
-            <textarea name="companyAddress" id="companyAddress"><?= $companyAddress; ?></textarea>
+            <textarea name="companyAddress" id="companyAddress"><?= $contentJob->getCompanyAddress(); ?></textarea>
         </div>
 
         <div>
             <label for="companyEmail"><?= __('Email:', 'jobs_posting')?></label>
-            <input name="companyEmail" id="companyEmail" value="<?= $companyEmail; ?>" type="text" />
+            <input name="companyEmail" id="companyEmail" value="<?= $contentJob->getEmail(); ?>" type="text" />
         </div>
 
         <div>
             <label for="companyAddressApply"><?= __('Mail address:', 'jobs_posting')?></label>
-            <textarea name="companyAddressApply" id="companyAddressApply"><?= $companyAddressApply; ?></textarea>
+            <textarea name="companyAddressApply" id="companyAddressApply"><?= $contentJob->getMailAddress(); ?></textarea>
         </div>
 
         <div>
             <label for="companyPhone"><?= __('Phone:', 'jobs_posting')?></label>
-            <input name="companyPhone" id="companyPhone" value="<?= $companyPhone; ?>" type="tel" />
+            <input name="companyPhone" id="companyPhone" value="<?= $contentJob->getPhone(); ?>" type="tel" />
         </div>
 
         <div>
             <label for="companyFax"><?= __('Fax:', 'jobs_posting')?></label>
-            <input name="companyFax" id="companyFax" value="<?= $companyFax; ?>" type="tel" />
+            <input name="companyFax" id="companyFax" value="<?= $contentJob->getFax(); ?>" type="tel" />
         </div>
 
         <div>
             <label for="companyURLApply"><?= __('Company URL to apply:', 'jobs_posting')?></label>
-            <input name="companyURLApply" id="companyURLApply" value="<?= $companyURLApply; ?>" type="text" />
+            <input name="companyURLApply" id="companyURLApply" value="<?= $contentJob->getURLToApply(); ?>" type="text" />
         </div>
 
         <div>
             <label for="companyDescription"><?= __('Company description:', 'jobs_posting')?></label>
-            <?php wp_editor($companyDescription, 'companyDescription', ['wpautop' => true, 'teeny' => true]);?>
+            <?php wp_editor($contentJob->getCompanyDescription(), 'companyDescription', ['wpautop' => true, 'teeny' => true]);?>
         </div>
         <?php
     }
 
     public function perksMeta(): void
     {
-        $perksDescription = !empty($this->customPost['perksDescription']) ? $this->customPost['perksDescription'][0] : '';
+        $contentJob = new ContentJob($this->postId);
         ?>
         <div>
             <label for="perksDescription"><?= __('Job perks:', 'jobs_posting')?></label>
-            <?php wp_editor($perksDescription, 'perksDescription', ['wpautop'=>true, 'teeny'=>true]); ?>
+            <?php wp_editor($contentJob->getPerks(), 'perksDescription', ['wpautop'=>true, 'teeny'=>true]); ?>
         </div>
         <?php
     }
 
     public function whereMeta(): void
     {
-        $whereStreet     = !empty($this->customPost['whereStreet']) ? $this->customPost['whereStreet'][0] : '';
-        $whereCity       = !empty($this->customPost['whereCity']) ? $this->customPost['whereCity'][0] : '';
-        $whereProvince   = !empty($this->customPost['whereProvince']) ? $this->customPost['whereProvince'][0] : '';
-        $wherePostalCode = !empty($this->customPost['wherePostalCode']) ? $this->customPost['wherePostalCode'][0] : '';
-        $whereCountry    = !empty($this->customPost['whereCountry']) ? $this->customPost['whereCountry'][0] : '';
+        $contentJob = new ContentJob($this->postId);
+
+        $whereProvince = $contentJob->getProvince();
+        $whereCountry  = $contentJob->getCountry();
         ?>
         <div>
             <label for="whereCountry"><?= __('Country:', 'jobs_posting')?></label>
@@ -238,35 +229,41 @@ class AdminJobs
         
         <div>
             <label for="whereStreet"><?= __('Street:', 'jobs_posting')?></label>
-            <input name="whereStreet" id="whereStreet" value="<?= $whereStreet; ?>" type="text" />
+            <input name="whereStreet" id="whereStreet" value="<?= $contentJob->getStreetAddress(); ?>" type="text" />
         </div>
 
         <div>
             <label for="whereCity"><?= __('City:', 'jobs_posting')?></label>
-            <input name="whereCity" id="whereCity" value="<?= $whereCity; ?>" type="text" />
+            <input name="whereCity" id="whereCity" value="<?= $contentJob->getCity(); ?>" type="text" />
         </div>
         
         <div>
             <label for="wherePostalCode"><?= __('ZIP:', 'jobs_posting')?></label>
-            <input name="wherePostalCode" id="wherePostalCode" value="<?= $wherePostalCode; ?>" type="text" placeholder="<?= __('A1A 1A1', 'jobs_posting')?>" maxlength="7" />
+            <input name="wherePostalCode" id="wherePostalCode" value="<?= $contentJob->getPostalCode(); ?>" type="text" placeholder="<?= __('A1A 1A1', 'jobs_posting')?>" maxlength="7" />
         </div>
         <?php
     }
 
     public function salaryMeta(): void
     {
-        $salaryJobCategory  = !empty($this->customPost['salaryJobCategory']) ? $this->customPost['salaryJobCategory'][0] : '';
-        $salaryCurrency = !empty($this->customPost['salaryCurrency']) ? $this->customPost['salaryCurrency'][0] : '';
-        $salaryMin      = !empty($this->customPost['salaryMin']) ? $this->customPost['salaryMin'][0] : '';
-        $salaryMax      = !empty($this->customPost['salaryMax']) ? $this->customPost['salaryMax'][0] : '';
-        $salaryRecurrency     = !empty($this->customPost['salaryRecurrency']) ? $this->customPost['salaryRecurrency'][0] : '';
+        $contentJob = new ContentJob($this->postId);
+
+        $salaryJobCategory = $contentJob->getSalaryCategory();
+        $salaryCurrency    = $contentJob->getCurrency();
+        $salaryRecurrency  = $contentJob->getSalaryRecurrency();
         ?>
         <div>
             <label for="salaryJobCategory"><?= __('Salary category:', 'jobs_posting')?></label>
             <select name="salaryJobCategory" id="salaryJobCategory">
-                <option <?= $salaryJobCategory === 'normal' ? ' selected="selected"' : '';?> value="normal"><?= __('Normal', 'jobs_posting')?></option>
-                <option <?= $salaryJobCategory === 'discuss' ? ' selected="selected"' : '';?> value="discuss"><?= __('To discuss', 'jobs_posting')?></option>
-                <option <?= $salaryJobCategory === 'commission' ? ' selected="selected"' : '';?> value="commission"><?= __('Commisson', 'jobs_posting')?></option>
+                <option <?= $salaryJobCategory === 'normal' ? ' selected="selected"' : '';?> value="normal">
+                    <?= __('Normal', 'jobs_posting')?>
+                </option>
+                <option <?= $salaryJobCategory === 'discuss' ? ' selected="selected"' : '';?> value="discuss">
+                    <?= __('To discuss', 'jobs_posting')?>
+                </option>
+                <option <?= $salaryJobCategory === 'commission' ? ' selected="selected"' : '';?> value="commission">
+                    <?= __('Commisson', 'jobs_posting')?>
+                </option>
             </select>
         </div>
         
@@ -280,22 +277,32 @@ class AdminJobs
 
         <div>
             <label for="salaryMin"><?= __('Minimum salary:', 'jobs_posting')?></label>
-            <input name="salaryMin" id="salaryMin" value="<?= $salaryMin; ?>" type="text" min="0" />
+            <input name="salaryMin" id="salaryMin" value="<?= $contentJob->getSalaryMin(); ?>" type="text" min="0" />
         </div>
 
         <div>
             <label for="salaryMax"><?= __('Maximum salary:', 'jobs_posting')?></label>
-            <input name="salaryMax" id="salaryMax" value="<?= $salaryMax; ?>" type="text" min="0" />
+            <input name="salaryMax" id="salaryMax" value="<?= $contentJob->getSalaryMax(); ?>" type="text" min="0" />
         </div>
 
         <div>
             <label for="salaryRecurrency"><?= __('Salary type:', 'jobs_posting')?></label>
             <select name="salaryRecurrency" id="salaryRecurrency">
-                <option value="HOUR"<?= $salaryRecurrency === 'HOUR' ? ' selected="selected"' : '';?>><?= __('Hourly', 'jobs_posting')?></option>
-                <option value="DAY"<?= $salaryRecurrency === 'DAY' ? ' selected="selected"' : '';?>><?= __('Dayly', 'jobs_posting')?></option>
-                <option value="WEEK"<?= $salaryRecurrency === 'WEEK' ? ' selected="selected"' : '';?>><?= __('Weekly', 'jobs_posting')?></option>
-                <option value="MONTH"<?= $salaryRecurrency === 'MONTH' ? ' selected="selected"' : '';?>><?= __('Monthly', 'jobs_posting')?></option>
-                <option value="YEAR"<?= $salaryRecurrency === 'YEAR' ? ' selected="selected"' : '';?>><?= __('Yearly', 'jobs_posting')?></option>
+                <option value="HOUR"<?= $salaryRecurrency === 'HOUR' ? ' selected="selected"' : '';?>>
+                    <?= __('Hourly', 'jobs_posting')?>
+                </option>
+                <option value="DAY"<?= $salaryRecurrency === 'DAY' ? ' selected="selected"' : '';?>>
+                    <?= __('Dayly', 'jobs_posting')?>
+                </option>
+                <option value="WEEK"<?= $salaryRecurrency === 'WEEK' ? ' selected="selected"' : '';?>>
+                    <?= __('Weekly', 'jobs_posting')?>
+                </option>
+                <option value="MONTH"<?= $salaryRecurrency === 'MONTH' ? ' selected="selected"' : '';?>>
+                    <?= __('Monthly', 'jobs_posting')?>
+                </option>
+                <option value="YEAR"<?= $salaryRecurrency === 'YEAR' ? ' selected="selected"' : '';?>>
+                    <?= __('Yearly', 'jobs_posting')?>
+                </option>
             </select>
         </div>
         <?php
@@ -424,7 +431,8 @@ class AdminJobs
         if (isset($_POST['jobStartTime'])) {
             global $post;
 
-            $postId          = $post->ID;
+            $postId = $post->ID;
+
             $jobDisplayEndEpoch = new \DateTime($_POST['jobDisplayEnd'].' 23:59:59');
             
             update_post_meta($postId,'jobDisplayEnd', $jobDisplayEndEpoch->format('U'));

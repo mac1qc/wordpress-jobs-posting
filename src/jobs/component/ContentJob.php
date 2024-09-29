@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mac1qc\WordpressJobsPosting\jobs\component;
 
+use Mac1qc\WordpressJobsPosting\jobs\component\enum\SalaryRecurrency;
+
 class ContentJob
 {
     public function __construct(private int $postId)
@@ -35,6 +37,11 @@ class ContentJob
         return !empty(get_post_meta($this->postId, 'companyDescription', TRUE)) ? wpautop(get_post_meta($this->postId, 'companyDescription', TRUE)) : '';
     }
 
+    public function getCompanyAddress(): string
+    {
+        return !empty(get_post_meta($this->postId, 'companyAddress', TRUE)) ? wpautop(get_post_meta($this->postId, 'companyAddress', TRUE)) : '';
+    }
+
     public function getDisplayEnd(): int
     {
         return !empty(get_post_meta($this->postId, 'jobDisplayEnd', TRUE)) ? (int)get_post_meta($this->postId, 'jobDisplayEnd', TRUE) : 0;
@@ -52,15 +59,15 @@ class ContentJob
 
     public function getReadableType(): string
     {
-        return match ($jobType = $this->getType()) {
-            'FULL_TIME'  => __('Full time', 'jobs_posting'),
-            'PART_TIME'  => __('Part time', 'jobs_posting'),
-            'CONTRACTOR' => __('Contractor', 'jobs_posting'),
-            'TEMPORARY'  => __('Temporary', 'jobs_posting'),
-            'INTERN'     => __('Intern', 'jobs_posting'),
-            'VOLUNTEER'  => __('Volunteer', 'jobs_posting'),
-            'PER_DIEM'   => __('Per diem', 'jobs_posting'),
-            default      => __('Other', 'jobs_posting'),
+        return match ($this->getType()) {
+            SalaryRecurrency::FULL_TIME->value  => __('Full time', 'jobs_posting'),
+            SalaryRecurrency::PART_TIME->value  => __('Part time', 'jobs_posting'),
+            SalaryRecurrency::CONTRACTOR->value => __('Contractor', 'jobs_posting'),
+            SalaryRecurrency::TEMPORARY->value  => __('Temporary', 'jobs_posting'),
+            SalaryRecurrency::INTERN->value     => __('Intern', 'jobs_posting'),
+            SalaryRecurrency::VOLUNTEER->value  => __('Volunteer', 'jobs_posting'),
+            SalaryRecurrency::PER_DIEM->value   => __('Per diem', 'jobs_posting'),
+            default                             => __('Other', 'jobs_posting'),
         };
     }
 
@@ -156,7 +163,7 @@ class ContentJob
 
     public function getSalaryRecurrencyReadable(): string
     {
-        return match ($salaryRecurrency = $this->getSalaryRecurrency()) {
+        return match ($this->getSalaryRecurrency()) {
             'MONTHLY'  => __('Monthly', 'jobs_posting'),
             'WEEKLY'   => __('Weekly', 'jobs_posting'),
             'DAILY'    => __('Daily', 'jobs_posting'),

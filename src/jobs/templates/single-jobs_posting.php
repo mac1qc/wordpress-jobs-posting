@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Mac1qc\WordpressJobsPosting\jobs\component\ContentJob;
 
 get_header();
@@ -30,8 +32,8 @@ $jobMaxValue           = $contentJob->getSalaryMax();
 $jobSalaryRecurrency   = $contentJob->getSalaryRecurrency();
 $jobCompanySameAddress = $contentJob->isSameAddress();
 
-$forbidenCaracters = [',',' '];
-$goodCaracters     = ['.',''];
+$forbidenCharacters = [',', ' '];
+$goodCharacters     = ['.', ''];
 ?>
 <script type="application/ld+json">
     {
@@ -75,7 +77,7 @@ $goodCaracters     = ['.',''];
             "address": {
                 "@type": "PostalAddress",
                 "streetAddress": "<?= $jobStreetAddress;?>",
-                "addressLocality": ", <?= $jobCityAddress;?>",
+                "addressLocality": "<?= $jobCityAddress;?>",
                 "addressRegion": "<?= $jobProvinceAddress;?>",
                 "postalCode": "<?= $jobPostalCodeAddress;?>",
                 "addressCountry": "<?= $jobCountryAddress;?>"
@@ -88,16 +90,16 @@ $goodCaracters     = ['.',''];
                     "@type": "QuantitativeValue",
                     "value": <?php if ($jobMinValue || $jobMaxValue) {
                         echo ($jobMinValue) ? 
-                            str_replace($forbidenCaracters, $goodCaracters, $jobMinValue) . ',' :
-                            str_replace($forbidenCaracters, $goodCaracters, $jobMaxValue) . ',';
+                            str_replace($forbidenCharacters, $goodCharacters, $jobMinValue) . ',' :
+                            str_replace($forbidenCharacters, $goodCharacters, $jobMaxValue) . ',';
                         } else {
                             echo '0,';
                         }
 
                         if ($jobMinValue && $jobMaxValue) {
                             ?>
-                            "minValue": <?= str_replace($forbidenCaracters, $goodCaracters, $jobMinValue)?>,
-                            "maxValue": <?= str_replace($forbidenCaracters, $goodCaracters, $jobMaxValue)?>,
+                            "minValue": <?= str_replace($forbidenCharacters, $goodCharacters, $jobMinValue)?>,
+                            "maxValue": <?= str_replace($forbidenCharacters, $goodCharacters, $jobMaxValue)?>,
                             <?php
                         }?>
                     "unitText": "<?= $jobSalaryRecurrency?>"
