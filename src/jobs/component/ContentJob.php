@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mac1qc\WordpressJobsPosting\jobs\component;
 
+use Mac1qc\WordpressJobsPosting\jobs\component\enum\JobType;
 use Mac1qc\WordpressJobsPosting\jobs\component\enum\SalaryRecurrency;
 
 class ContentJob
@@ -60,14 +61,14 @@ class ContentJob
     public function getReadableType(): string
     {
         return match ($this->getType()) {
-            SalaryRecurrency::FULL_TIME->value  => __('Full time', 'jobs_posting'),
-            SalaryRecurrency::PART_TIME->value  => __('Part time', 'jobs_posting'),
-            SalaryRecurrency::CONTRACTOR->value => __('Contractor', 'jobs_posting'),
-            SalaryRecurrency::TEMPORARY->value  => __('Temporary', 'jobs_posting'),
-            SalaryRecurrency::INTERN->value     => __('Intern', 'jobs_posting'),
-            SalaryRecurrency::VOLUNTEER->value  => __('Volunteer', 'jobs_posting'),
-            SalaryRecurrency::PER_DIEM->value   => __('Per diem', 'jobs_posting'),
-            default                             => __('Other', 'jobs_posting'),
+            JobType::FULL_TIME->value  => __('Full time', 'jobs_posting'),
+            JobType::PART_TIME->value  => __('Part time', 'jobs_posting'),
+            JobType::CONTRACTOR->value => __('Contractor', 'jobs_posting'),
+            JobType::TEMPORARY->value  => __('Temporary', 'jobs_posting'),
+            JobType::INTERN->value     => __('Intern', 'jobs_posting'),
+            JobType::VOLUNTEER->value  => __('Volunteer', 'jobs_posting'),
+            JobType::PER_DIEM->value   => __('Per diem', 'jobs_posting'),
+            default                    => __('Other', 'jobs_posting'),
         };
     }
 
@@ -164,11 +165,11 @@ class ContentJob
     public function getSalaryRecurrencyReadable(): string
     {
         return match ($this->getSalaryRecurrency()) {
-            'MONTHLY'  => __('Monthly', 'jobs_posting'),
-            'WEEKLY'   => __('Weekly', 'jobs_posting'),
-            'DAILY'    => __('Daily', 'jobs_posting'),
-            'HOURLY'   => __('Hourly', 'jobs_posting'),
-            default    => __('Other', 'jobs_posting'),
+            SalaryRecurrency::HOUR->value => __('Monthly', 'jobs_posting'),
+            SalaryRecurrency::WEEK->value => __('Weekly', 'jobs_posting'),
+            SalaryRecurrency::DAY->value  => __('Daily', 'jobs_posting'),
+            SalaryRecurrency::HOUR->value => __('Hourly', 'jobs_posting'),
+            default                       => __('Other', 'jobs_posting'),
         };
     }
 
