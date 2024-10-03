@@ -3,7 +3,7 @@
 * Plugin Name: Jobs posting
 * Plugin URI: https://martin-ayotte.net
 * Description: Jobs posting plugin for your website that will also publish into Google Jobs
-* Version: 1.0
+* Version: 0.5.0
 * Author: mac1qc
 * Author URI: https://martin-ayotte.net
 */
