@@ -24,9 +24,9 @@ require_once plugin_dir_path(__FILE__) . 'src/jobs/component/ContentJob.php';
 require_once plugin_dir_path(__FILE__) . 'src/jobs/component/enum/SalaryRecurrency.php';
 require_once plugin_dir_path(__FILE__) . 'src/jobs/component/enum/JobType.php';
 
-function run_my_plugin(): void
+function runWordPressJobsPosting(): void
 {
     new JobsPosting();
 }
 
-run_my_plugin();
+runWordPressJobsPosting();
